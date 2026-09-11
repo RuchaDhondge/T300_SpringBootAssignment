@@ -1,5 +1,6 @@
 package com.example.leavemanagement.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.example.leavemanagement.dto.LeaveCreateDTO;
 import com.example.leavemanagement.dto.LeaveResponseDTO;
 import com.example.leavemanagement.exception.ResourceNotFoundException;
+import com.example.leavemanagement.mapper.LeaveMapper;
 import com.example.leavemanagement.model.LeaveRequest;
 import com.example.leavemanagement.model.LeaveStatus;
 import com.example.leavemanagement.repository.LeaveRepository;
@@ -16,49 +18,44 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Default implementation of {@link LeaveService}.
- * Handles business logic and DTO-entity mapping for leave requests.
+ * Handles business logic for leave requests; entity/DTO conversion is
+ * delegated to {@link LeaveMapper}.
  */
 @Service
 @RequiredArgsConstructor
 public class LeaveServiceImpl implements LeaveService {
 
     private final LeaveRepository leaveRepository;
+    private final LeaveMapper leaveMapper;
 
     @Override
     public LeaveResponseDTO createLeave(LeaveCreateDTO createDTO) {
-        if (createDTO.getEndDate().isBefore(createDTO.getStartDate())) {
-            throw new IllegalArgumentException("End date cannot be before start date");
-        }
+        validateDateRange(createDTO.getStartDate(), createDTO.getEndDate());
 
-        LeaveRequest leaveRequest = mapToEntity(createDTO);
+        LeaveRequest leaveRequest = leaveMapper.toEntity(createDTO);
         leaveRequest.setStatus(LeaveStatus.PENDING);
 
         LeaveRequest saved = leaveRepository.save(leaveRequest);
-        return mapToResponseDTO(saved);
+        return leaveMapper.toResponseDTO(saved);
     }
 
     @Override
     public LeaveResponseDTO getLeaveById(Long id) {
-        LeaveRequest leaveRequest = leaveRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Leave request not found with id: " + id));
-        return mapToResponseDTO(leaveRequest);
+        LeaveRequest leaveRequest = findLeaveOrThrow(id);
+        return leaveMapper.toResponseDTO(leaveRequest);
     }
 
     @Override
     public List<LeaveResponseDTO> getAllLeaves() {
         return leaveRepository.findAll().stream()
-                .map(this::mapToResponseDTO)
+                .map(leaveMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public LeaveResponseDTO updateLeave(Long id, LeaveCreateDTO updateDTO) {
-        LeaveRequest existing = leaveRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Leave request not found with id: " + id));
-
-        if (updateDTO.getEndDate().isBefore(updateDTO.getStartDate())) {
-            throw new IllegalArgumentException("End date cannot be before start date");
-        }
+        LeaveRequest existing = findLeaveOrThrow(id);
+        validateDateRange(updateDTO.getStartDate(), updateDTO.getEndDate());
 
         existing.setEmployeeId(updateDTO.getEmployeeId());
         existing.setLeaveType(updateDTO.getLeaveType());
@@ -68,7 +65,7 @@ public class LeaveServiceImpl implements LeaveService {
         // id and status are preserved from the existing entity
 
         LeaveRequest updated = leaveRepository.save(existing);
-        return mapToResponseDTO(updated);
+        return leaveMapper.toResponseDTO(updated);
     }
 
     @Override
@@ -79,25 +76,14 @@ public class LeaveServiceImpl implements LeaveService {
         leaveRepository.deleteById(id);
     }
 
-    private LeaveRequest mapToEntity(LeaveCreateDTO dto) {
-        return LeaveRequest.builder()
-                .employeeId(dto.getEmployeeId())
-                .leaveType(dto.getLeaveType())
-                .startDate(dto.getStartDate())
-                .endDate(dto.getEndDate())
-                .reason(dto.getReason())
-                .build();
+    private LeaveRequest findLeaveOrThrow(Long id) {
+        return leaveRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Leave request not found with id: " + id));
     }
 
-    private LeaveResponseDTO mapToResponseDTO(LeaveRequest entity) {
-        return LeaveResponseDTO.builder()
-                .id(entity.getId())
-                .employeeId(entity.getEmployeeId())
-                .leaveType(entity.getLeaveType())
-                .startDate(entity.getStartDate())
-                .endDate(entity.getEndDate())
-                .reason(entity.getReason())
-                .status(entity.getStatus())
-                .build();
+    private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("End date cannot be before start date");
+        }
     }
 }
