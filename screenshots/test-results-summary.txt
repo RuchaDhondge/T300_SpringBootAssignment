@@ -1,0 +1,8 @@
+--- build/test-results/test/TEST-com.example.leavemanagement.LeaveManagementApplicationTests.xml ---
+<testsuite name="com.example.leavemanagement.LeaveManagementApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-11T09:36:31.585Z" hostname="Ruchas-Mac-mini.local" time="2.086"
+--- build/test-results/test/TEST-com.example.leavemanagement.controller.LeaveControllerTest.xml ---
+<testsuite name="com.example.leavemanagement.controller.LeaveControllerTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-11T09:36:33.674Z" hostname="Ruchas-Mac-mini.local" time="0.736"
+--- build/test-results/test/TEST-com.example.leavemanagement.service.LeaveServiceTest.xml ---
+<testsuite name="com.example.leavemanagement.service.LeaveServiceTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-11T09:36:34.413Z" hostname="Ruchas-Mac-mini.local" time="0.12"
+
+Total: 12 tests, 0 failures, 0 errors — all passing (verified 2026-09-11 15:08 IST)

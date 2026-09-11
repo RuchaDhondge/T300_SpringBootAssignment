@@ -1,0 +1,60 @@
+=== 1. GET /leaves (empty initially) ===
+curl -i http://localhost:8081/leaves
+[]
+HTTP Status: 200
+
+=== 2. POST /leaves (create valid leave) ===
+curl -i -X POST http://localhost:8081/leaves -H "Content-Type: application/json" -d '{"employeeId":101,"leaveType":"SICK","startDate":"2026-09-15","endDate":"2026-09-17","reason":"Fever and flu"}'
+{"id":1,"employeeId":101,"leaveType":"SICK","startDate":"2026-09-15","endDate":"2026-09-17","reason":"Fever and flu","status":"PENDING"}
+HTTP Status: 201
+
+=== 3. POST /leaves (invalid - validation error) ===
+curl -i -X POST http://localhost:8081/leaves -H "Content-Type: application/json" -d '{"leaveType":"SICK","startDate":"2026-09-15","endDate":"2026-09-17","reason":"   "}'
+{"status":400,"message":"Validation Failed","timestamp":"2026-09-11T15:08:20.274473","errors":{"employeeId":"Employee ID is required","reason":"Reason cannot be empty"}}
+HTTP Status: 400
+
+=== 4. GET /leaves/1 (fetch created leave) ===
+curl -i http://localhost:8081/leaves/1
+{"id":1,"employeeId":101,"leaveType":"SICK","startDate":"2026-09-15","endDate":"2026-09-17","reason":"Fever and flu","status":"PENDING"}
+HTTP Status: 200
+
+=== 5. GET /leaves/999 (not found) ===
+curl -i http://localhost:8081/leaves/999
+{"status":404,"message":"Leave request not found with id: 999","timestamp":"2026-09-11T15:08:20.32728","errors":null}
+HTTP Status: 404
+
+=== 6. PUT /leaves/1 (update leave) ===
+curl -i -X PUT http://localhost:8081/leaves/1 -H "Content-Type: application/json" -d '{"employeeId":101,"leaveType":"ANNUAL","startDate":"2026-09-20","endDate":"2026-09-25","reason":"Family vacation"}'
+{"id":1,"employeeId":101,"leaveType":"ANNUAL","startDate":"2026-09-20","endDate":"2026-09-25","reason":"Family vacation","status":"PENDING"}
+HTTP Status: 200
+
+=== 7. POST /leaves (invalid date range - end before start) ===
+curl -i -X POST http://localhost:8081/leaves -H "Content-Type: application/json" -d '{"employeeId":102,"leaveType":"CASUAL","startDate":"2026-09-20","endDate":"2026-09-10","reason":"Bad range"}'
+{"status":400,"message":"End date cannot be before start date","timestamp":"2026-09-11T15:08:20.373993","errors":null}
+HTTP Status: 400
+
+=== 8. PUT /leaves/999 (update non-existent leave - not found) ===
+curl -i -X PUT http://localhost:8081/leaves/999 -H "Content-Type: application/json" -d '{"employeeId":101,"leaveType":"ANNUAL","startDate":"2026-09-20","endDate":"2026-09-25","reason":"Ghost update"}'
+{"status":404,"message":"Leave request not found with id: 999","timestamp":"2026-09-11T15:08:20.398046","errors":null}
+HTTP Status: 404
+
+=== 9. POST /leaves (malformed JSON body) ===
+curl -i -X POST http://localhost:8081/leaves -H "Content-Type: application/json" -d '{"employeeId":101, "leaveType":'
+{"status":400,"message":"Malformed JSON request body","timestamp":"2026-09-11T15:08:20.421669","errors":null}
+HTTP Status: 400
+
+=== 10. GET /leaves (all leaves after create) ===
+curl -i http://localhost:8081/leaves
+[{"id":1,"employeeId":101,"leaveType":"ANNUAL","startDate":"2026-09-20","endDate":"2026-09-25","reason":"Family vacation","status":"PENDING"}]
+HTTP Status: 200
+
+=== 11. DELETE /leaves/1 ===
+curl -i -X DELETE http://localhost:8081/leaves/1
+
+HTTP Status: 204
+
+=== 12. GET /leaves/1 (after delete - not found) ===
+curl -i http://localhost:8081/leaves/1
+{"status":404,"message":"Leave request not found with id: 1","timestamp":"2026-09-11T15:08:20.49141","errors":null}
+HTTP Status: 404
+
