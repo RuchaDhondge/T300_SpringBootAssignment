@@ -148,6 +148,13 @@ All endpoints were verified end-to-end against the running app (`./gradlew bootR
 
 Test run summary is captured in [`screenshots/test-results-summary.txt`](screenshots/test-results-summary.txt) — 12/12 tests passing.
 
+### Screenshots
+
+| Successful Application Startup | REST API Execution | Test Suite Execution |
+|---|---|---|
+| ![Application startup](screenshots/DeploymentScreenshot.png) | ![REST API responses](screenshots/RestAPIResponseScreenshot.png) | ![Test suite results](screenshots/TestsScreenshot.png) |
+| `./gradlew bootRun` — Tomcat started on port 8081, `dev` profile active | `curl` requests/responses for `GET`, `POST`, `GET/{id}`, validation `400`, and `404 Not Found` cases | Gradle test report — 12/12 tests passing (100% success) across `LeaveControllerTest`, `LeaveServiceTest`, and application context load |
+
 ## Testing Coverage
 
 - **Unit tests** (`LeaveServiceTest`) — success and failure paths using Mockito, including negative cases: `getLeaveById`, `updateLeave`, and `deleteLeave` all throw `ResourceNotFoundException` for non-existent IDs.
